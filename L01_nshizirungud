@@ -1,0 +1,383 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "name": "L01: Greedy.ipynb",
+      "provenance": [],
+      "history_visible": true,
+      "include_colab_link": true
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/github/DieuMerci225/Count-Evens-MASTER/blob/master/L01_nshizirungud\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "Ws6rXa1xv_gv"
+      },
+      "source": [
+        "# [L01: Implementing Greedy TSP](https://docs.google.com/document/d/1JA_CWBXPN6whvJAemnJLvtYJ3Pbk84dTUolWO_QqosA/edit?usp=sharing)\n",
+        "Written by Dr. Jan Pearce, Berea College\n",
+        "\n",
+        "Complete the code by meeting all linked requirements and fixing all FIXMEs\n",
+        "\n",
+        "## Your Name: DieuMerci Nshizirungu\n"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "PvEpt0HPKq9X"
+      },
+      "source": [
+        "**SUMMARY**: A brief summary description of the design and implementation, including how much your initial design plan evolved, the final result you achieved and the amount of time you spent as a programmer or programmers in accomplishing these results. This should be no more than two paragraphs.\n",
+        "\n",
+        "made a greedy Traveling Salesperson (TSP) program in Python using NetworkX. The program reads the file tsp-small.txt, saves the city coordinates, and then makes a tour by always going to the closest city that has not been visited yet, until all cities are visited and it returns to the start. I kept the code easy to follow with basic loops and simple distance math. My plan was just to get one route working from a starting city, and I stuck with that. I also added a way to print the tour in the same format as the input file and made the graph show the route and edge weights so I could see that it worked.\n",
+        "\n",
+        "**PERSONNEL**: A description of who you worked with and on what sections.  It is expected that all collaboration is done as pair programming together. Also, note these collaborations in the code section itself.\n",
+        "\n",
+        "I worked alone.\n",
+        "\n",
+        "**CHALLENGES**: Descriptions of the largest challenges you overcame and what made them challenging.\n",
+        "\n",
+        "One challenge I faced was understanding how to correctly load the input file. At first, I passed the raw contents instead of the file base name into extractData, which gave me URL errors until I fixed it. Another challenge was keeping the function signature for getRoute (current, visits, nVisits, needList) as required by the assignment while still keeping the inside logic simple. I also had to be careful with node IDs to make sure they matched consistently as 0..N-1 across coords, the graph, and the route; otherwise I would run into KeyErrors. Finally, I had to double-check that I always removed the selected city from the unvisited list so the algorithm never revisited a node before returning to the start.\n",
+        "\n",
+        "**INNOVATIONS**: Any innovations that were not specifically required by the assignment. These are not required, but should be highlighted if included.\n",
+        "\n",
+        "For this lab I added a few small things that were not required but made the program easier to use. I rounded the edge weights on the graph so the labels look cleaner and are easier to read. I also cleared out the data lists and the graph before rebuilding them, so the program can be re-run without errors or leftover data. Finally, in my main() I printed extra information like the number of nodes, the first node’s data, a sample distance, and the full route with its cost. These steps were not part of the directions, but they helped me double check that my code was working the way I wanted.\n",
+        "\n",
+        "**TESTING**: Describe how you tested this work.\n",
+        "\n",
+        "\n",
+        "**ERRORS**: A list in bulleted form of all known errors and deficiencies.\n",
+        "\n",
+        "InvalidURL                                Traceback (most recent call last)\n",
+        "/tmp/ipython-input-1797465426.py in <cell line: 0>()\n",
+        "    140\n",
+        "f\"(found at least {match.group()!r})\")\n",
+        "TypeError: 'tuple' object is not callable\n",
+        "KeyError: 0\n",
+        "\n",
+        "I tested each method at every point. As I calculated greedily, additionally, I used print statements to check all the considered paths and ensure the shortest was consistently checked.\n",
+        "\n",
+        "**COMMENTS**: A paragraph or so of your own comments on and reactions to the Lab.\n",
+        "\n",
+        "This lab helped me practice core Python skills lists, sets, dictionaries, loops and see how a greedy heuristic works end-to-end. Drawing the graph with edge weights was especially helpful for checking if the tour made sense. If I extend this, I’d try multiple starting cities and compare their total costs, but for now I focused on getting a clear, correct, and readable single-start greedy solution. Great exercise"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [],
+      "metadata": {
+        "id": "wNuaUKpqtBkR"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "source": [],
+      "metadata": {
+        "id": "pGKl773gtJh5"
+      }
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "lRXe-Atyv30H"
+      },
+      "source": [
+        "## Import Libraries"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "b6koAGG2mhix"
+      },
+      "source": [
+        "import networkx as nx\n",
+        "import matplotlib.pyplot as plt\n",
+        "import math\n",
+        "from urllib.request import urlopen"
+      ],
+      "execution_count": 1,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "GzeEKA-nwLsJ",
+        "outputId": "df7604e8-daa7-4b29-93a0-16abb430923d",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        }
+      },
+      "source": [
+        "tspdata = urlopen(\"http://cs.berea.edu/courses/csc445/data/tsp-small.txt\").read().decode('ASCII')\n",
+        "print(tspdata)"
+      ],
+      "execution_count": 2,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "6\r\n",
+            "1 5 \r\n",
+            "3 7 \r\n",
+            "5 11 \r\n",
+            "3 5 \r\n",
+            "5 7 \r\n",
+            "7 9 \r\n",
+            "\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "qGcB5022KlHL"
+      },
+      "source": [
+        "## TSP Class"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "KIzVOICElISX",
+        "outputId": "785f740d-725a-4146-8451-5d85d0e17ba8",
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 568
+        },
+        "collapsed": true
+      },
+      "source": [
+        "\"\"\"\n",
+        "\n",
+        "Given certain input, it uses the greedy algorithm to plot a graph and output a file of the solution path\n",
+        "\"\"\"\n",
+        "\n",
+        "class TSP:\n",
+        "\n",
+        "    def __init__(self):\n",
+        "        \"\"\" TSP class containing data needed for networkx graph creation, file reading and file writing.\n",
+        "            Creates a graph for the traveling salesperon problem using the greedy algorithm\n",
+        "        \"\"\"\n",
+        "\n",
+        "        self.dimension = None\n",
+        "        self.nodeData = []\n",
+        "        self.graph = nx.DiGraph()\n",
+        "        self.coords = {}\n",
+        "        self.places = []\n",
+        "        self.route = []\n",
+        "\n",
+        "\n",
+        "    def extractData(self, inputFile=\"\"):\n",
+        "        \"\"\"\n",
+        "        Itterate through the input file and append each coordinate into the node list.\n",
+        "        Keyword Arguments:\n",
+        "            inputFile {str} -- a string for the file name (default: {\"\"})\n",
+        "        \"\"\"\n",
+        "        file_path = urlopen(f\"http://cs.berea.edu/courses/csc445/data/{inputFile}.txt\")\n",
+        "        lines = file_path.read().decode(\"ASCII\").strip().splitlines()\n",
+        "        self.dimension = int(lines[0])\n",
+        "        self.nodeData = [] # Clear nodeData before appending\n",
+        "        for line in lines[1:1+self.dimension]:\n",
+        "            x, y = map(int, line.split())\n",
+        "            self.nodeData.append([x,y])\n",
+        "\n",
+        "\n",
+        "    def setUpCoords(self):\n",
+        "        \"\"\" Puts the coordinates for each node into a dictionary as a tuple with the node as the key \"\"\"\n",
+        "\n",
+        "        self.coords = {} # Clear coords before setting up\n",
+        "        for i, coords in enumerate(self.nodeData):\n",
+        "            self.coords[i] = (coords[0], coords[1])\n",
+        "\n",
+        "    def calculateDistance(self, a, b):\n",
+        "        \"\"\"calculates & returns the distance between points a and b\n",
+        "        Arguments:\n",
+        "            a {[tuple]} -- tuple of numbers for the x and y coordinate of a node\n",
+        "            b {[tuple]} -- tuple of numbers for the x and y coordinate of a node\n",
+        "        Returns:\n",
+        "            [float] -- the distance between the two points using the distance formula\n",
+        "        \"\"\"\n",
+        "\n",
+        "        delta_x, delta_y = a[0] - b[0], b[1] - a[1]\n",
+        "        x_squared, y_squared = delta_x ** 2, delta_y ** 2\n",
+        "        difference_squared = x_squared + y_squared\n",
+        "\n",
+        "        return difference_squared ** 0.5\n",
+        "\n",
+        "    def getRoute(self, current, visits=[], nVisits=[], needList=True):\n",
+        "        \"\"\"Makes a list of the nodes to be visited, in order, according to the greedy alogorithm for the TSP\n",
+        "        Arguments:\n",
+        "            current {int} -- the node to start at, not a list index\n",
+        "        Keyword Arguments:\n",
+        "            visits {list} -- list of places already visited (default: {[]})\n",
+        "            nVisits {list} -- list of places not visited (default: {[]})\n",
+        "            needList {bool} -- boolean deciding if the list of places not visited needs to be filled (default: {True})\n",
+        "        \"\"\"\n",
+        "        if needList:\n",
+        "            nVisits = list(self.coords.keys())\n",
+        "            if current in nVisits:\n",
+        "                nVisits.remove(current)\n",
+        "\n",
+        "        route = [current]\n",
+        "        total_cost = 0\n",
+        "        while nVisits:\n",
+        "                # trying to find the closest neighbor\n",
+        "            closest_node= None\n",
+        "            closest_distance = float(\"inf\")\n",
+        "            for node in nVisits:\n",
+        "                d = self.calculateDistance(self.coords[current],self.coords[node])\n",
+        "                if d < closest_distance:\n",
+        "                    closest_distance = d\n",
+        "                    closest_node = node\n",
+        "\n",
+        "              # trying to move to that close city(neighbor)\n",
+        "            route.append(closest_node)\n",
+        "            total_cost += closest_distance\n",
+        "            current = closest_node\n",
+        "            nVisits.remove(closest_node)\n",
+        "\n",
+        "        total_cost += self.calculateDistance(self.coords[current], self.coords[route[0]])\n",
+        "        route.append(route[0])\n",
+        "        return route, total_cost\n",
+        "\n",
+        "\n",
+        "\n",
+        "\n",
+        "\n",
+        "\n",
+        "    def beGreedy(self, start):\n",
+        "        \"\"\" puts together the greedy algorithm. Gets the route order and adds the starting place to the end of the route\n",
+        "        Arguments:\n",
+        "            start -- the starting node for the greedy algorithm\n",
+        "        \"\"\"\n",
+        "        self.route, self.total_cost = self.getRoute(start)\n",
+        "\n",
+        "\n",
+        "    def listPlaces(self):\n",
+        "        \"\"\"makes a list of all the nodes/places from the dictionary\n",
+        "        Returns:\n",
+        "            [list] -- list of all the nodes/places\n",
+        "        \"\"\"\n",
+        "        return list(self.coords.keys())\n",
+        "\n",
+        "\n",
+        "    def cleanUpList(self, visited, notVisited):\n",
+        "        \"\"\"removes items in visited from notVisited\n",
+        "        Arguments:\n",
+        "            visited {list}\n",
+        "            notVisited {list}\n",
+        "        Returns:\n",
+        "            [list] -- a list of notVisited - visited\n",
+        "        \"\"\"\n",
+        "\n",
+        "        for item in visited:\n",
+        "            if item in notVisited:\n",
+        "                notVisited.remove(item)\n",
+        "        return notVisited\n",
+        "\n",
+        "    def addNodes(self):\n",
+        "        \"\"\" adds nodes to the networkx graph\n",
+        "        \"\"\"\n",
+        "        self.graph.clear() # Clear graph before adding nodes\n",
+        "        for node, coords in self.coords.items(): # Corrected loop\n",
+        "            self.graph.add_node(node, pos=coords)\n",
+        "\n",
+        "    def addEdges(self):\n",
+        "        \"\"\"Adds graphs to the networkx graph\n",
+        "        \"\"\"\n",
+        "        # No need to clear edges, addNodes clears the graph\n",
+        "        x = 0\n",
+        "        while x < len(self.route)-1:\n",
+        "            self.graph.add_edge(self.route[x], self.route[x+1],\n",
+        "                                weight=round(self.calculateDistance(self.coords[self.route[x]], self.coords[self.route[x+1]]), 2)) # Added rounding for display\n",
+        "            x += 1\n",
+        "\n",
+        "    def showGraph(self):\n",
+        "        \"\"\"Uses the imported libraries to display the graph\n",
+        "        \"\"\"\n",
+        "        # get labels and coordinates for the graph\n",
+        "        coords = nx.get_node_attributes(self.graph, 'pos')\n",
+        "        labels = nx.get_edge_attributes(self.graph, 'weight')\n",
+        "        # draw nodes in their coordinates\n",
+        "        nx.draw(self.graph, coords, with_labels=True) # Added with_labels=True\n",
+        "        # nx.draw_networkx_labels(self.graph, coords) # This is redundant with with_labels=True\n",
+        "        # draw edges with their weights\n",
+        "        nx.draw_networkx_edge_labels(self.graph, coords, edge_labels=labels)\n",
+        "        plt.show()\n",
+        "\n",
+        "\n",
+        "\n",
+        "\n",
+        "def main():\n",
+        "    tsp = TSP()\n",
+        "\n",
+        "    tsp.extractData(\"tsp-small\")\n",
+        "    tsp.setUpCoords()\n",
+        "    tsp.addNodes()\n",
+        "    tsp.beGreedy(0)\n",
+        "    tsp.addEdges()\n",
+        "    tsp.showGraph()\n",
+        "\n",
+        "\n",
+        "    print(f\"Dimension: {tsp.dimension}\")\n",
+        "    print(f\"Number of nodes: {len(tsp.nodeData)}\")\n",
+        "    print(f\"First node data: {tsp.nodeData[0]}\")\n",
+        "    print (f\"Distance between (0,0) and (3,4): {tsp.calculateDistance((0,0),(3,4))}\")\n",
+        "    route, cost = tsp.getRoute(0)\n",
+        "    print(f\"Route starting from node 0: {route}\")\n",
+        "    print(f\"Total cost for the route starting from node 0: {cost}\")\n",
+        "\n",
+        "\n",
+        "main()"
+      ],
+      "execution_count": 3,
+      "outputs": [
+        {
+          "output_type": "display_data",
+          "data": {
+            "text/plain": [
+              "<Figure size 640x480 with 1 Axes>"
+            ],
+            "image/png": "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QACy2+0KDq57Xam8vFxFRUUqLy9X+/btvVQZ/BENJWAiJSUlCgsLM7oMAD5u9uzZKioqksVi0RNPPKE+ffrU+louj0FDcBEEYBJHjhzRkCFD9H//939GlwLAR+3du1fXXXedPv/8c3Xq1Enr16/XE088oUuXLtX6MzSTaAhWKAETKC4uVnx8vL766itZrVb97ne/00MPPWR0WQB8yBdffKFp06YpISFBixcvltVq1aeffqqhQ4fq2LFjioqKMrpE+DE25QAm8Pbbb6tt27b66KOPtG7dOj3yyCM6deqUnnzySQUFBV31ekZYQOC5ePGiHn74YU2ePLlyl/a//vUv/exnP9PmzZs1YMAAde/eXeHh4QZXCn/ECiVgAtu3b9ehQ4cqA4f/+Mc/KikpSUlJSXrppZcqr6u8ePGiQkNDifwAAsQPvzyeOnWqciXyN7/5jebNm6chQ4bo1KlTCgkJqVy9BBqLhhIwiUuXLql58+ZyOByyWq1au3atpkyZojFjxuiPf/yjJGnevHkaOXKk7rnnHoOrBeBpGRkZ2rVrl7p166YhQ4boJz/5SeVz586dU1JSkoYPH66xY8eqefPmmjdvnrZt26aVK1eqR48exhUOv0RDCfgpp9OpkpKSauOpH65GfPLJJxo7dqxuuukmWSwW7dmzRydOnKg3KgSAf7v33nv12WefafDgwdq3b58iIyO1evVqdezYsfI1FbFBFf/59ttva+LEiTp48KCuv/56A6uHP2LuBfihlStXatq0aYqJiVFKSoq++uorSVfvxhw8eLC2bdumzZs368CBA9qzZw/NJGBSTqdTDodDzz33nPLz8/XJJ58oMzNTCxcu1OnTp1VcXFz5WofDUXl9dcW/E3JycnTvvfcqOjrakPrh32goAT+TmZmpxx57TJGRkRo/frz+/Oc/67e//W2tr3/77bcVFBSkDz74QJ07d/ZeoQC8ymKxyGq1Kjs7W7feemtlY9i/f39169ZN+fn5Onz4sCTJarXKYrGopKREFy5c0Ny5c/WHP/xB9913n5o3b27krwE/xVIF4EcOHjyouXPnavHixZo2bZokadiwYfr5z3+uGTNmqF+/ftVWKXNzc7VlyxatXr1affv2NapsAF5SUlKi7t2768CBA9q7d68uXbqkxMREtWzZUhMnTpTValVycrKSkpJ04cIFLVy4UDabTSdPntSGDRt00003Gf0rwE+xQgn4CYfDoa1bt2rQoEGVm2rKy8t14403qnPnzjp79uxVI+9OnTpp5cqVSkxMNKBiAN4WFhamsWPHyuFwaNasWYqLi9PYsWP1+eefa8uWLUpKSlJKSoq+/vprtWzZUnfffbfuvfdeHT58mGYSLmGFEvATVqtVP/7xj1VUVKQOHTpIkoKCgtS+fXtFRUXp/Pnzla89d+6cSktLFRUVpS5duhhVMgAvqtiUl5iYqLvvvlu7du3S448/rhdffFGtW7dW69atNWjQILVq1UqHDh3Sj370I8XHxys+Pt7o0mECrFACfmTo0KGaN2+epCsfHhWcTqdycnIkSQUFBRo+fLhsNpshNQLwHofDUfnPVScULVq0UHl5uUJCQlRSUlL5eFFRkdq3b88ubrgdK5SAH6jpzjYWi6UyczIqKkrl5eWSpOHDh6tFixYaN26cEaUC8KCjR49q165datasmUaOHKkWLVrU+lqn06nvv/9ef/jDH/TTn/5UZ86c0axZszRx4kT17NnTi1UjEJBDCfiwr776Sn369Kn1+YqG8tFHH9U111yjPXv26PDhw/ryyy+9WCUAb/j973+vl19+WT169NDBgwd1ww03aPXq1brmmmuqva7qF9CFCxdq5cqVKi4uVlBQkJKSkjRz5kwjyofJ0VACPmrhwoX68MMP9e6776ply5Z1vjYpKUlpaWm67rrrdPDgQYWEhHipSgDe8PLLL+uNN95QWlqahgwZosuXL+vGG2/UQw89pJdffrmyiaxpmvHdd9/p9OnTat++PdFh8BhG3oAPWrRokebPny9J2rhx41Xj6x9+eHTt2lVRUVHasWMHzSRgMsXFxdqyZYsWLFigUaNGVd7ZZtq0acrOzlZ5ebms1itbIiqayYyMDPXs2VM/+clP1LlzZxpJeBybcgAfk56ermeffVYffvihZs2apVdeeUUnTpyo9pqKD42TJ09KkubOnas9e/ZU7v4GYB7h4eF65plndNddd0n6z51tLl26pIiICAUFBVVbldy9e7fmzZun119/XaWlpYbUjMBDQwn4kA8//FAPPfSQli9frjvvvFODBg3SV199pd27d0uqvrM7KytLjz76qP7xj39IUrV79AIwl6FDh6pLly5yOp2y2+2Srqxc9urVS1L13d4333yznn32Wc2fP1+hoaGG1IvAQ0MJ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\n"
+          },
+          "metadata": {}
+        },
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Dimension: 6\n",
+            "Number of nodes: 6\n",
+            "First node data: [1, 5]\n",
+            "Distance between (0,0) and (3,4): 5.0\n",
+            "Route starting from node 0: [0, 3, 1, 4, 5, 2, 0]\n",
+            "Total cost for the route starting from node 0: 18.86795680042036\n"
+          ]
+        }
+      ]
+    }
+  ]
+}
